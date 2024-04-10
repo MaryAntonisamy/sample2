@@ -1,0 +1,27 @@
+# Use an appropriate base image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+
+# Set the working directory
+WORKDIR /app
+
+# Assuming there's an existing service/app in the container
+# Copy its files and perform necessary actions (just an example)
+COPY ExistingApp/ ./ExistingApp/
+RUN dotnet build "ExistingApp/ExistingApp.csproj" -c Release -o /app/build
+
+# Now, incorporate your new application
+COPY NewApp/*.csproj ./NewApp/
+RUN dotnet restore "NewApp/NewApp.csproj"
+COPY NewApp/ ./NewApp/
+RUN dotnet publish "NewApp/NewApp.csproj" -c Release -o /app/publish
+
+# Use the runtime image for the final stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build-env /app/publish .
+
+# You might have multiple ENTRYPOINT or CMD instructions depending on your applications
+# This might require a script to kick off multiple processes or using a process manager
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
