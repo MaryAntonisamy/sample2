@@ -1,0 +1,37 @@
+# Use the Microsoft's .NET SDK image to build the projects
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /app
+
+# Assuming both projects are in separate directories within the same solution
+# Copy and restore for the background service
+COPY CosmosToServiceBus/CosmosToServiceBus.csproj ./CosmosToServiceBus/
+RUN dotnet restore "./CosmosToServiceBus/CosmosToServiceBus.csproj"
+
+# Copy and restore for the API project
+COPY YourApiProjectName/YourApiProjectName.csproj ./YourApiProjectName/
+RUN dotnet restore "./YourApiProjectName/YourApiProjectName.csproj"
+
+# Copy the rest of the source code
+COPY CosmosToServiceBus/. ./CosmosToServiceBus/
+COPY YourApiProjectName/. ./YourApiProjectName/
+
+# Publish the background service
+RUN dotnet publish "./CosmosToServiceBus/CosmosToServiceBus.csproj" -c Release -o out/CosmosToServiceBus
+
+# Publish the API project
+RUN dotnet publish "./YourApiProjectName/YourApiProjectName.csproj" -c Release -o out/YourApiProjectName
+
+# Generate the runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Copy the published output
+COPY --from=build-env /app/out/CosmosToServiceBus ./
+COPY --from=build-env /app/out/YourApiProjectName ./
+
+# Install a process manager like Supervisor to manage multiple services
+RUN apt-get update && apt-get install -y supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Use Supervisor to start both the background service and the API
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
