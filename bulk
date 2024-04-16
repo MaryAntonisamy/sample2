@@ -1,0 +1,57 @@
+using Microsoft.Azure.Cosmos;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+class Program
+{
+    private static CosmosClient cosmosClient;
+    private static Container container;
+
+    static async Task Main(string[] args)
+    {
+        // Setup Cosmos client with bulk support
+        string connectionString = "Your Connection String";
+        cosmosClient = new CosmosClient(connectionString, new CosmosClientOptions() { AllowBulkExecution = true });
+        container = cosmosClient.GetContainer("YourDatabase", "YourContainer");
+
+        // Assuming you have a list of items with old and new event dates
+        List<(string id, string oldPartitionKey, string newPartitionKey)> itemsToUpdate = new List<(string id, string oldPartitionKey, string newPartitionKey)>
+        {
+            ("id1", "2022-05-01", "2022-06-01"),
+            ("id2", "2022-05-02", "2022-06-02"),
+            // more items
+        };
+
+        // Process updates
+        await UpdateItemsWithNewPartitionKey(itemsToUpdate);
+    }
+
+    private static async Task UpdateItemsWithNewPartitionKey(List<(string id, string oldPartitionKey, string newPartitionKey)> itemsToUpdate)
+    {
+        List<Task> createTasks = new List<Task>();
+        List<Task> deleteTasks = new List<Task>();
+
+        foreach (var item in itemsToUpdate)
+        {
+            // Fetch the original item
+            ItemResponse<dynamic> response = await container.ReadItemAsync<dynamic>(item.id, new PartitionKey(item.oldPartitionKey));
+            dynamic newItem = response.Resource;
+
+            // Modify the partition key in the new item
+            newItem.partitionKey = item.newPartitionKey;
+
+            // Schedule creation of the new item
+            createTasks.Add(container.CreateItemAsync(newItem, new PartitionKey(newItem.partitionKey)));
+
+            // Schedule deletion of the old item
+            deleteTasks.Add(container.DeleteItemAsync<dynamic>(item.id, new PartitionKey(item.oldPartitionKey)));
+        }
+
+        // Wait for all creation tasks to complete before starting deletions
+        await Task.WhenAll(createTasks);
+
+        // Then delete all old items
+        await Task.WhenAll(deleteTasks);
+    }
+}
