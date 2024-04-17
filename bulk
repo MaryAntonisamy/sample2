@@ -55,3 +55,23 @@ class Program
         await Task.WhenAll(deleteTasks);
     }
 }
+try
+{
+    await Task.WhenAll(createTasks);
+}
+catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.BadRequest)
+{
+    // Log the details of the exception to understand the problem.
+    // This will contain more specific information about what caused the BadRequest.
+    Console.WriteLine($"Cosmos DB BadRequest error: {ex}");
+    
+    // Optionally, inspect the inner exceptions if necessary.
+    foreach (var task in createTasks)
+    {
+        if (task.IsFaulted)
+        {
+            // This will give you the specific error for each failed task.
+            Console.WriteLine(task.Exception?.InnerException?.Message);
+        }
+    }
+}
