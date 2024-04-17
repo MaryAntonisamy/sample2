@@ -1,29 +1,63 @@
-public async Task UpdatePartitionKeyAsync<T>(List<T> itemsToUpdate, Func<T, string> partitionKeySelector, Func<T, T> transformFunc) where T : class
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class RecurringEvent
 {
-    // Instantiate your generic repository
-    var repository = new GenericRepository<T>(cosmosClient, databaseId, containerId);
+    public string Id { get; set; } // Your item ID
+    public DateTime CurrentEventDate { get; set; } // Existing partition key
+    public DateTime NextEventDate { get; set; } // New partition key
+    // Other properties
+}
 
-    // Create and delete tasks lists
-    var createTasks = new List<Task>();
-    var deleteTasks = new List<Task>();
+public interface IRepository<T>
+{
+    Task AddAsync(T item);
+    Task DeleteAsync(string id, string partitionKey);
+}
 
-    foreach (var item in itemsToUpdate)
+public class GenericRepository<T> : IRepository<T>
+{
+    // Implementation of IRepository methods
+}
+
+public class YourService
+{
+    private readonly IRepository<RecurringEvent> repository;
+
+    public YourService(IRepository<RecurringEvent> repository)
     {
-        // Generate new item with updated partition key
-        T newItem = transformFunc(item);
-
-        // Schedule create operation
-        createTasks.Add(repository.AddAsync(newItem));
-
-        // Get the old partition key from the item
-        string oldPartitionKey = partitionKeySelector(item);
-
-        // Schedule delete operation for the old item
-        // Assuming the repository.DeleteAsync method can take an id and a partition key
-        deleteTasks.Add(repository.DeleteAsync(item.Id, oldPartitionKey));
+        this.repository = repository;
     }
 
-    // Run creation and deletion tasks
-    await Task.WhenAll(createTasks);
-    await Task.WhenAll(deleteTasks);
+    public async Task UpdatePartitionKeyAsync(List<RecurringEvent> itemsToUpdate, Func<RecurringEvent, string> partitionKeySelector, Func<RecurringEvent, RecurringEvent> transformFunc)
+    {
+        var createTasks = new List<Task>();
+        var deleteTasks = new List<Task>();
+
+        foreach (var item in itemsToUpdate)
+        {
+            RecurringEvent newItem = transformFunc(item);
+            createTasks.Add(repository.AddAsync(newItem));
+            deleteTasks.Add(repository.DeleteAsync(item.Id, partitionKeySelector(item)));
+        }
+
+        await Task.WhenAll(createTasks);
+        await Task.WhenAll(deleteTasks);
+    }
 }
+
+// Sample usage:
+/*
+List<RecurringEvent> itemsToUpdate = // ... populate your list from somewhere
+
+Func<RecurringEvent, RecurringEvent> transformFunc = (RecurringEvent oldEvent) =>
+{
+    // Logic to create a new event with updated partition key
+};
+
+Func<RecurringEvent, string> partitionKeySelector = (RecurringEvent oldEvent) => oldEvent.CurrentEventDate.ToString();
+
+YourService service = new YourService(new GenericRepository<RecurringEvent>()); // Pass actual repository instance
+await service.UpdatePartitionKeyAsync(itemsToUpdate, partitionKeySelector, transformFunc);
+*/
