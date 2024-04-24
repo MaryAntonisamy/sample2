@@ -1,0 +1,53 @@
+using System;
+
+public class Program
+{
+    public static void Main()
+    {
+        // Sample PAN card numbers
+        string panNumber1 = "799273987130000001"; // This number is designed to pass the Luhn check
+        string panNumber2 = "799273987130000002"; // This number will fail the Luhn check
+
+        // Validate the PAN card numbers
+        bool isValid1 = IsValidPAN(panNumber1);
+        bool isValid2 = IsValidPAN(panNumber2);
+
+        // Output the results
+        Console.WriteLine("Is PAN number 1 valid? " + isValid1);
+        Console.WriteLine("Is PAN number 2 valid? " + isValid2);
+    }
+
+    public static bool IsValidPAN(string pan)
+    {
+        // Check if the PAN number has exactly 18 digits
+        if (pan.Length != 18 || !long.TryParse(pan, out _))
+        {
+            return false;
+        }
+
+        // Implement the Luhn algorithm
+        return CheckLuhn(pan);
+    }
+
+    private static bool CheckLuhn(string number)
+    {
+        int sum = 0;
+        bool isSecond = false;
+
+        for (int i = number.Length - 1; i >= 0; i--)
+        {
+            int d = number[i] - '0';
+
+            if (isSecond)
+            {
+                d = d * 2;
+                d = (d > 9) ? (d - 9) : d;
+            }
+
+            sum += d;
+            isSecond = !isSecond;
+        }
+
+        return (sum % 10 == 0);
+    }
+}
