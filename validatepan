@@ -1,0 +1,56 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+public class PanValidator
+{
+    public static bool ContainsValidPAN(string input)
+    {
+        // Assuming PAN numbers are exactly 16 digits long
+        var regex = new Regex(@"\d{16}");
+        var matches = regex.Matches(input);
+
+        foreach (Match match in matches)
+        {
+            if (IsValidPAN(match.Value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsValidPAN(string number)
+    {
+        int sum = 0;
+        bool alternate = false;
+
+        for (int i = number.Length - 1; i >= 0; i--)
+        {
+            var digit = number[i] - '0';
+
+            if (alternate)
+            {
+                digit *= 2;
+                if (digit > 9)
+                {
+                    digit -= 9;
+                }
+            }
+            sum += digit;
+            alternate = !alternate;
+        }
+
+        // Check if the sum is a multiple of 10
+        return (sum % 10 == 0);
+    }
+
+    public static void Main()
+    {
+        string reference = "Your reference number 1234567812345678 should be checked";
+        bool containsPAN = ContainsValidPAN(reference);
+        Console.WriteLine($"Contains valid PAN: {containsPAN}");
+    }
+}
