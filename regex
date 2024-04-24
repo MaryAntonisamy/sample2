@@ -1,0 +1,29 @@
+using System;
+using System.Text.RegularExpressions;
+
+public class Program
+{
+    public static void Main()
+    {
+        // Sample PAN card number
+        string panNumber = "ABCDE12345FGHI6789";
+
+        // Validate the PAN card number
+        bool isValid = ValidatePAN(panNumber);
+
+        // Output the result
+        Console.WriteLine("Is the PAN number valid? " + isValid);
+    }
+
+    public static bool ValidatePAN(string pan)
+    {
+        // Regular expression to check if the string has exactly 18 alphanumeric characters
+        string pattern = @"^[a-zA-Z0-9]{18}$";
+
+        // Create a Regex object with the pattern
+        Regex regex = new Regex(pattern);
+
+        // Check if the PAN matches the pattern
+        return regex.IsMatch(pan);
+    }
+}
