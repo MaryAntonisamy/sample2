@@ -47,4 +47,8 @@ class Program
             sumOfDigits += digit / 10;
             sumOfDigits += digit % 10;
 
-            isSecond​⬤
+            isSecond = !isSecond;
+        }
+        return (sumOfDigits % 10) == 0;
+    }
+}
