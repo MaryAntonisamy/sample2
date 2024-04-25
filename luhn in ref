@@ -1,0 +1,47 @@
+using System;
+using System.Text.RegularExpressions;
+
+class Program
+{
+    static void Main()
+    {
+        string reference = "Your payment method: 1234-5678-9012-3456 has been processed."; // Example reference
+        Console.WriteLine("Does the reference contain a valid credit card number? " + ContainsValidCreditCard(reference));
+    }
+
+    static bool ContainsValidCreditCard(string text)
+    {
+        // Regular expression to find potential credit card numbers
+        var regex = new Regex(@"\b(?:\d[ -]*?){13,16}\b");
+
+        // Check each match to see if it's a valid credit card number
+        foreach (Match match in regex.Matches(text))
+        {
+            string potentialCardNumber = match.Value.Replace(" ", "").Replace("-", ""); // Remove spaces and hyphens
+            if (ValidateCreditCard(potentialCardNumber))
+                return true;
+        }
+
+        return false;
+    }
+
+    static bool ValidateCreditCard(string cardNumber)
+    {
+        int sumOfDigits = 0;
+        bool isSecond = false;
+
+        for (int i = cardNumber.Length - 1; i >= 0; i--)
+        {
+            int digit = cardNumber[i] - '0'; // Convert char to int
+
+            if (isSecond)
+                digit = digit * 2;
+
+            sumOfDigits += digit / 10;
+            sumOfDigits += digit % 10;
+
+            isSecond = !isSecond;
+        }
+        return (sumOfDigits % 10) == 0;
+    }
+}
