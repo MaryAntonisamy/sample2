@@ -1,0 +1,50 @@
+using System;
+using System.Text.RegularExpressions;
+
+class Program
+{
+    static void Main()
+    {
+        string reference = "Your payment method: 1234!56#78$9012%3456 has been processed."; // Example with special characters
+        Console.WriteLine("Does the reference contain a valid credit card number? " + ContainsValidCreditCard(reference));
+    }
+
+    static bool ContainsValidCreditCard(string text)
+    {
+        // Regular expression to find sequences of digits interspersed potentially with any characters
+        var regex = new Regex(@"(?:\d[\d\s\-!#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]*?){13,19}");
+
+        // Check each match to see if it's a valid credit card number
+        foreach (Match match in regex.Matches(text))
+        {
+            string cleanedNumber = CleanCardNumber(match.Value);
+            if (cleanedNumber.Length >= 13 && cleanedNumber.Length <= 16 && ValidateCreditCard(cleanedNumber))
+                return true;
+        }
+
+        return false;
+    }
+
+    // Clean the card number by removing all non-digit characters
+    static string CleanCardNumber(string number)
+    {
+        return Regex.Replace(number, @"[^\d]", "");
+    }
+
+    // Validate the credit card number using the Luhn algorithm
+    static bool ValidateCreditCard(string cardNumber)
+    {
+        int sumOfDigits = 0;
+        bool isSecond = false;
+
+        for (int i = cardNumber.Length - 1; i >= 0; i--)
+        {
+            int digit = cardNumber[i] - '0'; // Convert char to int
+
+            if (isSecond)
+                digit *= 2;
+
+            sumOfDigits += digit / 10;
+            sumOfDigits += digit % 10;
+
+            isSecond​⬤
