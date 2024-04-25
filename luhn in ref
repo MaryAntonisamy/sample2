@@ -5,26 +5,33 @@ class Program
 {
     static void Main()
     {
-        string reference = "Your payment method: 1234-5678-9012-3456 has been processed."; // Example reference
+        string reference = "Your payment method: 123456-789012-3456 has been processed.";  // Example with irregular hyphen placement
         Console.WriteLine("Does the reference contain a valid credit card number? " + ContainsValidCreditCard(reference));
     }
 
     static bool ContainsValidCreditCard(string text)
     {
-        // Regular expression to find potential credit card numbers
-        var regex = new Regex(@"\b(?:\d[ -]*?){13,16}\b");
+        // Regular expression to find sequences of digits that could be credit card numbers
+        var regex = new Regex(@"(?:\d[ -]*?){13,19}");
 
         // Check each match to see if it's a valid credit card number
         foreach (Match match in regex.Matches(text))
         {
-            string potentialCardNumber = match.Value.Replace(" ", "").Replace("-", ""); // Remove spaces and hyphens
-            if (ValidateCreditCard(potentialCardNumber))
+            string cleanedNumber = CleanCardNumber(match.Value);
+            if (cleanedNumber.Length >= 13 && cleanedNumber.Length <= 16 && ValidateCreditCard(cleanedNumber))
                 return true;
         }
 
         return false;
     }
 
+    // Clean the card number by removing spaces and hyphens
+    static string CleanCardNumber(string number)
+    {
+        return number.Replace(" ", "").Replace("-", "");
+    }
+
+    // Validate the credit card number using the Luhn algorithm
     static bool ValidateCreditCard(string cardNumber)
     {
         int sumOfDigits = 0;
@@ -35,7 +42,7 @@ class Program
             int digit = cardNumber[i] - '0'; // Convert char to int
 
             if (isSecond)
-                digit = digit * 2;
+                digit *= 2;
 
             sumOfDigits += digit / 10;
             sumOfDigits += digit % 10;
