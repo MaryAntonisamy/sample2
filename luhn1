@@ -1,0 +1,32 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        string cardNumber = "1234567812345670";  // Example card number
+        bool isValid = ValidateCreditCard(cardNumber);
+        Console.WriteLine("Credit Card number is valid: " + isValid);
+    }
+
+    static bool ValidateCreditCard(string cardNumber)
+    {
+        int sumOfDigits = 0;
+        bool isSecond = false;
+
+        for (int i = cardNumber.Length - 1; i >= 0; i--)
+        {
+            int digit = cardNumber[i] - '0'; // Convert char to int
+
+            if (isSecond == true)
+                digit = digit * 2;
+
+            // Add two digits to handle cases that make two digits after doubling
+            sumOfDigits += digit / 10;
+            sumOfDigits += digit % 10;
+
+            isSecond = !isSecond;
+        }
+        return (sumOfDigits % 10) == 0;
+    }
+}
