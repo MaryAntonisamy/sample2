@@ -1,0 +1,45 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  nugetPackOutput: '$(Build.ArtifactStagingDirectory)'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET 8 SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build solution'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Pack NuGet package'
+  inputs:
+    command: 'pack'
+    projects: '**/*.csproj'
+    packDirectory: '$(nugetPackOutput)'
+    arguments: '--configuration $(buildConfiguration) --no-build'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: NuGet package'
+  inputs:
+    PathtoPublish: '$(nugetPackOutput)'
+    ArtifactName: 'NuGetPackages'
+    publishLocation: 'container'
