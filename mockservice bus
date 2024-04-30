@@ -36,4 +36,7 @@ namespace YourNamespace.Tests
             sender.SendMessageAsync(message);
 
             // Assert
-            mockServiceBusSender.Verify(sender =>​⬤
+            mockServiceBusSender.Verify(sender => sender.SendMessageAsync(It.IsAny<ServiceBusMessage>(), default), Times.Once());
+        }
+    }
+}
