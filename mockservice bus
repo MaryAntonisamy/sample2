@@ -1,0 +1,39 @@
+using Moq;
+using Azure.Messaging.ServiceBus;
+using NUnit.Framework;
+
+namespace YourNamespace.Tests
+{
+    [TestFixture]
+    public class ServiceBusTests
+    {
+        private Mock<ServiceBusClient> mockServiceBusClient;
+        private Mock<ServiceBusSender> mockServiceBusSender;
+
+        [SetUp]
+        public void Setup()
+        {
+            // Create a mock instance of ServiceBusClient
+            mockServiceBusClient = new Mock<ServiceBusClient>();
+
+            // Create a mock instance of ServiceBusSender
+            mockServiceBusSender = new Mock<ServiceBusSender>();
+
+            // Setup the mock ServiceBusClient to return the mock ServiceBusSender
+            mockServiceBusClient.Setup(client => client.CreateSender(It.IsAny<string>()))
+                .Returns(mockServiceBusSender.Object);
+        }
+
+        [Test]
+        public void TestSendMessage()
+        {
+            // Arrange
+            var queueName = "your-queue-name";
+            var message = new ServiceBusMessage("Hello, Service Bus!");
+
+            // Act
+            var sender = mockServiceBusClient.Object.CreateSender(queueName);
+            sender.SendMessageAsync(message);
+
+            // Assert
+            mockServiceBusSender.Verify(sender =>​⬤
