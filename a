@@ -1,0 +1,19 @@
+using System;
+
+public class Program
+{
+    public static void Main()
+    {
+        // Create a Uri instance with the URL
+        Uri myUri = new Uri("https://abc.123.com/xyz");
+
+        // Extract the segments of the path
+        string[] pathSegments = myUri.Segments;
+
+        // Get the last segment of the path
+        string lastSegment = pathSegments[pathSegments.Length - 1].Trim('/');
+
+        // Display the result
+        Console.WriteLine("Last Segment: " + lastSegment);
+    }
+}
