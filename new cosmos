@@ -1,0 +1,47 @@
+param cosmosDbAccountName string
+param cosmosDbDatabaseName string
+param cosmosDbContainerName string
+param appServiceResourceId string
+param cosmosDbThroughput int
+
+resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' existing = {
+  name: cosmosDbAccountName
+}
+
+resource cosmosDbDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-04-15' = {
+  parent: cosmosDbAccount
+  name: cosmosDbDatabaseName
+  properties: {}
+}
+
+resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-04-15' = {
+  parent: cosmosDbDatabase
+  name: cosmosDbContainerName
+  properties: {
+    resource: {
+      id: cosmosDbContainerName
+    }
+    partitionKey: {
+      paths: ['/nextEventDate']
+      kind: 'Hash'
+    }
+    options: {
+      throughput: cosmosDbThroughput
+    }
+  }
+}
+
+resource cosmosDataReaderWriterRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions@2021-06-15' existing = {
+  parent: cosmosDbAccount
+  name: '00000000-0000-0000-0000-0000000000021' // Verify this GUID is correct
+}
+
+resource cosmosDataReaderWriterRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2021-06-15' = {
+  parent: cosmosDbAccount
+  name: guid(appServiceResourceId, cosmosDbAccountName, 'DataReaderWriter')
+  properties: {
+    roleDefinitionId: cosmosDataReaderWriterRoleDefinition.id
+    principalId: reference(appServiceResourceId, '2022-03-01', 'full').identity.principalId
+    scope: cosmosDbAccount.id
+  }
+}
