@@ -1,0 +1,41 @@
+Azure Cosmos DB offers a wide range of operations that you can perform on your databases, containers, and documents. These operations are typically available through various SDKs tailored for different programming languages, as well as via the Azure Portal and REST API. Here are some of the key operations you can perform in Cosmos DB:
+
+### Database Operations
+1. **Create Database**: Create new databases within a Cosmos DB account.
+2. **List Databases**: Retrieve a list of databases within the account.
+3. **Get Database**: Retrieve properties of a specific database.
+4. **Delete Database**: Delete an existing database.
+
+### Container/Collections Operations
+1. **Create Container**: Create a new container within a database.
+2. **List Containers**: List all containers within a database.
+3. **Get Container**: Retrieve properties and metadata of a specific container.
+4. **Update Container**: Modify properties of a container, such as throughput settings.
+5. **Delete Container**: Remove a container from the database.
+
+### Document/Item Operations
+1. **Create Document**: Add new documents to a container.
+2. **Read Document**: Retrieve a specific document by its ID.
+3. **Query Documents**: Perform SQL-like queries to fetch documents based on various criteria.
+4. **Replace Document**: Update a document by replacing it.
+5. **Delete Document**: Remove a document from a container.
+6. **Upsert Document**: Insert a new document or update an existing document if it already exists.
+
+### Transaction and Batch Operations
+1. **Transactional Batch**: Execute multiple operations within a single logical partition in an atomic manner.
+2. **Bulk Operations**: Perform bulk insert, update, delete, or upsert operations efficiently.
+
+### Stored Procedures, Triggers, and User-Defined Functions
+1. **Execute Stored Procedure**: Run custom application logic written in JavaScript directly on the database engine.
+2. **Use Triggers**: Automatically execute custom logic before or after document operations.
+3. **Apply User-Defined Functions (UDFs)**: Use custom functions in SQL queries to perform complex calculations.
+
+### Account and Throughput Management
+1. **Manage Throughput**: Set up and adjust the Request Units per second (RU/s) allocated to databases or containers.
+2. **Consistency Levels**: Configure the consistency level (from strong to eventual) for read operations to balance between latency, throughput, and consistency.
+
+### Monitoring and Maintenance
+1. **View Metrics and Logs**: Monitor performance metrics and logs through Azure Monitor and Azure Portal.
+2. **Backup and Restore**: Manage automatic backups and restore operations in case of data loss.
+
+These operations encompass most of what developers need to build, maintain, and scale applications using Cosmos DB. They are accessible programmatically via SDKs for languages like .NET, Java, Python, Node.js, and others, as well as through the Azure CLI and the Azure Portal for management and operational tasks.
